@@ -1,9 +1,15 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"log"
 	"math/big"
+	"os"
+	"runtime/pprof"
 )
+
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 const (
 	parallelism = 100
@@ -33,6 +39,18 @@ func nilakantha(ch chan *big.Float, istart, istop int) {
 }
 
 func main() {
+	flag.Parse()
+
+	// Profiling code
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	// Round up number of iterations to desired parallelism.
 	iter := iterations
 	if iterations%parallelism != 0 {
